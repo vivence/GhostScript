@@ -30,7 +30,7 @@ namespace Ghost.Script
 		internal static void Log_LexException(LexException e)
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
-			Console.Write(String.Format("{0}, {1}\n at [{2},{3}]: ", e.errorCode.ToString(), e.content, e.row, e.col));
+			Console.Write(String.Format("LexException: {0}, {1}\n at [{2},{3}]: ", e.errorCode.ToString(), e.content, e.row, e.col));
 			if (null != e.line && 0 < e.col && e.line.Length >= e.col)
 			{
 				Console.ForegroundColor = ConsoleColor.Black;

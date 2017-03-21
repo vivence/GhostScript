@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Ghost.Script
 {
@@ -25,15 +26,17 @@ namespace Ghost.Script
 		public enum Error
 		{
 			None,
-		}
-
-		public enum ParsePhase{
-			None,
+			NotComplete,
 		}
 
 		public class Context
 		{
-			public ParsePhase phase = ParsePhase.None;
+			public Syntax_Node node;
+
+			public Context(Syntax_Node root)
+			{
+				node = root;
+			}
 		}
 
 		public static void Log_LexData(Lex.Data data)
@@ -104,18 +107,31 @@ namespace Ghost.Script
 			#if DEBUG
 			Log_LexData(data);
 			#endif
-
-			switch (context.phase)
+			try
 			{
-			case ParsePhase.None:
-				break;
+				context.node = context.node.ParseLex(data);
+			}
+			catch (SyntaxException e)
+			{
+				e.line = data.line;
+				e.row = data.row;
+				e.col = data.col;
+				throw e;
 			}
 		}
 
-		public static void ParseStream(StreamReader reader)
+		public static void ParseStream(StreamReader reader, string path = null)
 		{
-			var context = new Context();
+			var root = Syntax_Node.Create<Syntax_File>();
+			root.path = path;
+			var context = new Context(root);
 			Lex.ParseStream(reader, LexDataReceiver, context);
+			if (!(context.node is Syntax_File))
+			{
+				var exception = new SyntaxException(Error.NotComplete);
+				exception.content = context.node.ToString();
+				throw exception;
+			}
 		}
 	}
 }
