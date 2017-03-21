@@ -9,10 +9,10 @@ namespace Ghost.Script
 	internal class SyntaxException : Exception
 	{
 		public Syntax.Error errorCode{get;private set;}
-		public string context;
+		public string content;
+		public string line;
 		public int row = 0;
 		public int col = 0;
-		public char c = '\0';
 
 		public SyntaxException(Syntax.Error e)
 		{
@@ -25,7 +25,15 @@ namespace Ghost.Script
 		public enum Error
 		{
 			None,
+		}
 
+		public enum ParsePhase{
+			None,
+		}
+
+		public class Context
+		{
+			public ParsePhase phase = ParsePhase.None;
 		}
 
 		public static void Log_LexData(Lex.Data data)
@@ -91,28 +99,23 @@ namespace Ghost.Script
 			}
 		}
 			
-		internal static void LexDataReceiver(Lex.Data data)
+		internal static void LexDataReceiver(Lex.Data data, Context context)
 		{
 			#if DEBUG
 			Log_LexData(data);
 			#endif
 
-			switch (data.token)
+			switch (context.phase)
 			{
-			case Token.Keyword:
+			case ParsePhase.None:
 				break;
-			case Token.Identify:
-				break;
-			default:
-				{
-					
-				}
 			}
 		}
 
 		public static void ParseStream(StreamReader reader)
 		{
-			Lex.ParseStream(reader, LexDataReceiver);
+			var context = new Context();
+			Lex.ParseStream(reader, LexDataReceiver, context);
 		}
 	}
 }

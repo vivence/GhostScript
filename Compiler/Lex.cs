@@ -102,7 +102,8 @@ namespace Ghost.Script
 	internal class LexException : Exception
 	{
 		public Lex.Error errorCode{get;private set;}
-		public string context;
+		public string content;
+		public string line;
 		public int row = 0; // start with 1
 		public int col = 0; // start with 1
 		public char c = '\0';
@@ -194,7 +195,7 @@ namespace Ghost.Script
 			else
 			{
 				var exception = new LexException(Error.ParseNumberFailed);
-				exception.context = str;
+				exception.content = str;
 				exception.col = (int)token;
 				throw exception;
 			}
@@ -238,7 +239,7 @@ namespace Ghost.Script
 			default:
 				{
 					var exception = new LexException(Error.InvalidToken);
-					exception.context = token.ToString();
+					exception.content = token.ToString();
 					throw exception;
 				}
 			}
@@ -318,7 +319,6 @@ namespace Ghost.Script
 			else
 			{
 				var exception = new LexException(Error.StringNoEnd);
-				exception.context = line;
 				exception.col = i+1;
 				throw exception;
 			}
@@ -415,7 +415,6 @@ namespace Ghost.Script
 					if ('_' == d || '.' == d || char.IsLetterOrDigit(d))
 					{
 						var exception = new LexException(Error.InvalidCharactor);
-						exception.context = line;
 						exception.col = j+1;
 						throw exception;
 					}
@@ -433,7 +432,6 @@ namespace Ghost.Script
 					if ('_' == d || '.' == d || char.IsLetter(d))
 					{
 						var exception = new LexException(Error.InvalidCharactor);
-						exception.context = line;
 						exception.col = j+1;
 						throw exception;
 					}
@@ -654,7 +652,7 @@ namespace Ghost.Script
 		{
 		}
 
-		public static ParsePhase ParseLine(string line, int lineNumber, ParsePhase phase, System.Action<Data> dataReceiver)
+		public static ParsePhase ParseLine<T>(string line, int lineNumber, ParsePhase phase, System.Action<Data, T> dataReceiver, T custom)
 		{
 			if (string.IsNullOrEmpty(line))
 			{
@@ -721,7 +719,6 @@ namespace Ghost.Script
 				else if (!char.IsWhiteSpace(c))
 				{
 					var exception = new LexException(Error.InvalidCharactor);
-					exception.context = line;
 					exception.col = i+1;
 					throw exception;
 				}
@@ -730,13 +727,13 @@ namespace Ghost.Script
 					data.line = line;
 					data.row = lineNumber;
 					data.col = startI+1;
-					dataReceiver(data);
+					dataReceiver(data, custom);
 				}
 			}
 			return phase;
 		}
 
-		public static void ParseStream(StreamReader reader, System.Action<Data> dataReceiver)
+		public static void ParseStream<T>(StreamReader reader, System.Action<Data, T> dataReceiver, T custom)
 		{
 			var phase = ParsePhase.New;
 			int lineNumber = 1;
@@ -747,13 +744,22 @@ namespace Ghost.Script
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine(String.Format("TryParseLine[{0}]\n{1}", lineNumber, line));
 				#endif 
-				phase = ParseLine(line, lineNumber, phase, dataReceiver);
+				try
+				{
+					phase = ParseLine(line, lineNumber, phase, dataReceiver, custom);
+				}
+				catch (LexException e)
+				{
+					e.line = line;
+					e.row = lineNumber;
+					throw e;
+				}
 				++lineNumber;
 			}
 			if (ParsePhase.Note == phase)
 			{
 				var exception = new LexException(Error.NoteNoEnd);
-				exception.context = "No \"*/\"";
+				exception.content = "No \"*/\"";
 				throw exception;
 			}
 		}
