@@ -51,6 +51,16 @@ namespace Ghost.Script
 		internal virtual void DoConstruct(Lex.Data data){}
 		internal virtual void DoDeconstruct(){}
 
+		internal Syntax_Node AddChild(Syntax_Node child)
+		{
+			if (null == children_)
+			{
+				children_ = new List<Syntax_Node>();
+			}
+			children_.Add(child);
+			return child;
+		}
+
 		internal abstract Syntax_Node ParseLex(Lex.Data data);
 
 		public static T Create<T>() where T:Syntax_Node,new()

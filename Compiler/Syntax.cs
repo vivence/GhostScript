@@ -27,6 +27,10 @@ namespace Ghost.Script
 		{
 			None,
 			NotComplete,
+			InvalidToken,
+			InvalidKeyword,
+			InvalidOperator,
+			InvalidFunction,
 		}
 
 		public class Context
@@ -36,6 +40,31 @@ namespace Ghost.Script
 			public Context(Syntax_Node root)
 			{
 				node = root;
+			}
+		}
+
+		public static List<Token> constantTokenList{get;internal set;}
+		public static List<Keyword> typeKeywordList{get;internal set;}
+		public static List<Keyword> constantKeywordList{get;internal set;}
+
+		static Syntax()
+		{
+			constantTokenList = new List<Token>();
+			for (int i = (int)Token.ConstantBegin_+1; i < (int)Token.ConstantEnd_; ++i)
+			{
+				constantTokenList.Add((Token)i);
+			}
+
+			typeKeywordList = new List<Keyword>();
+			for (int i = (int)Keyword.TypeBegin_+1; i < (int)Keyword.TypeEnd_; ++i)
+			{
+				typeKeywordList.Add((Keyword)i);
+			}
+
+			constantKeywordList = new List<Keyword>();
+			for (int i = (int)Keyword.ConstantBegin_+1; i < (int)Keyword.ConstantEnd_; ++i)
+			{
+				constantKeywordList.Add((Keyword)i);
 			}
 		}
 
@@ -104,7 +133,7 @@ namespace Ghost.Script
 			
 		internal static void LexDataReceiver(Lex.Data data, Context context)
 		{
-			#if DEBUG
+			#if LOG_LEX
 			Log_LexData(data);
 			#endif
 			try
@@ -135,52 +164,3 @@ namespace Ghost.Script
 		}
 	}
 }
-
-//GlobalFunction()
-//a = 1 // local variable
-//b = 2l
-//c = a+b
-//XXClass.abc = "abc"+"def"+1+1.1 // class static variable
-//obj.d = true // class instance variable
-//a = Func(a,b,c)
-//a,b = Func_(obj.d, XXClass.abc)
-//if ()
-//elseif ()
-//	else
-//		end
-//		loop()
-//		end
-//		loop
-//		until()
-//		end
-//
-//		LocalFunction_()
-//		block
-//
-//		end
-//		return 1,2
-//end
-//
-//class id:BaseClass(interface)
-//int32 privateVariable_
-//int64 publicVariableB = 0l
-//
-//id() // 构造，系统行为，不可访问
-//end
-//~id() // 析构，系统行为，不可访问
-//end
-//
-//static
-//bool staticPrivateVariable_
-//
-//id() // 静态构造，系统行为，不可访问
-//end
-//
-//StaticPublicFunction()
-//end
-//end
-//end
-//
-//interface
-//end
-

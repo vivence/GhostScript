@@ -12,7 +12,8 @@ namespace Ghost.Script
 		Keyword = 0,	// 以字母开始的标识符
 		Identify, 		// 字母、数字、下划线，不能以数字作为起始字符
 		Operator,		// 非字母、数字、下划线的字符
-		// constant begin
+
+		ConstantBegin_,
 		Int8,			// 后缀t
 		UInt8,			// 后缀ut
 		Int16,			// 后缀s
@@ -24,12 +25,13 @@ namespace Ghost.Script
 		Float,			// 后缀f
 		Double,
 		String,			// "",''
-		// constant end
+		ConstantEnd_,
 	}
 
 	internal enum Keyword
 	{
-		Int8 = 1000,	// int8
+		TypeBegin_ = 1000,
+		Int8,			// int8
 		Uint8,			// uint8
 		Int16,			// int16
 		Uint16,			// uint16
@@ -41,9 +43,14 @@ namespace Ghost.Script
 		Double,			// double
 		String,			// string
 		Bool,			// bool
+		TypeEnd_,
+
+		ConstantBegin_,
 		Null,			// null
 		True,			// true
 		False,			// false
+		ConstantEnd_,
+
 		If,				// if
 		Else,			// else
 		Elseif,			// elseif
@@ -51,6 +58,7 @@ namespace Ghost.Script
 		Until,			// until
 		End,			// end
 		Block,			// block
+		Return,			// return
 		Class,			// class
 		Interface,		// interface
 		Static,			// static
@@ -91,6 +99,7 @@ namespace Ghost.Script
 		NotEqual,        // !=
 		Dot,             // .
 		Colon,           // :
+		Comma,           // ,
 		S_Brackets_Beg,  // (
 		S_Brackets_End,  // )
 		M_Brackets_Beg,  // [
@@ -454,7 +463,7 @@ namespace Ghost.Script
 					{
 						if ('/' == line[i+1])
 						{
-							#if DEBUG
+							#if LOG_NOTE
 							Console.ForegroundColor = ConsoleColor.Gray;
 							Console.WriteLine(line.Substring(i));
 							#endif
@@ -466,7 +475,7 @@ namespace Ghost.Script
 							var endIndex = line.IndexOf("*/");
 							if (i < endIndex)
 							{
-								#if DEBUG
+								#if LOG_NOTE
 								Console.ForegroundColor = ConsoleColor.Gray;
 								Console.WriteLine(line.Substring(i, endIndex-i+2));
 								#endif
@@ -474,7 +483,7 @@ namespace Ghost.Script
 							}
 							else
 							{
-								#if DEBUG
+								#if LOG_NOTE
 								Console.ForegroundColor = ConsoleColor.Gray;
 								Console.WriteLine(line.Substring(i));
 								#endif
@@ -636,6 +645,7 @@ namespace Ghost.Script
 			},  // >,>=
 			{'.',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.Dot);}},
 			{':',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.Colon);}},
+			{',',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.Comma);}},
 			{'~',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.BitRevert);}},
 			{'!',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.LogicNot);}},
 			{'(',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.S_Brackets_Beg);}},
@@ -644,8 +654,6 @@ namespace Ghost.Script
 			{']',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.M_Brackets_End);}},
 			{'{',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.L_Brackets_Beg);}},
 			{'}',delegate(string line, ref int i, ref ParsePhase phase){return new Data(Token.Operator, Operator.L_Brackets_End);}},
-			{',',null},
-			{';',null},
 		};
 
 		static Lex ()
@@ -664,13 +672,13 @@ namespace Ghost.Script
 				var endIndex = line.IndexOf("*/");
 				if (0 > endIndex)
 				{
-					#if DEBUG
+					#if LOG_NOTE
 					Console.ForegroundColor = ConsoleColor.Gray;
 					Console.WriteLine(line);
 					#endif
 					return phase;
 				}
-				#if DEBUG
+				#if LOG_NOTE
 				Console.ForegroundColor = ConsoleColor.Gray;
 				Console.WriteLine(line.Substring(0, endIndex+2));
 				#endif
@@ -700,7 +708,8 @@ namespace Ghost.Script
 				{
 					var identify = ParseFunc_Identify(line, ref i, ref phase, c);
 					Keyword k;
-					if (Enum.TryParse(identify, true, out k))
+					if (Enum.TryParse(identify, true, out k)
+						&& ("API" == identify || identify.ToLower() == identify))
 					{
 						// keyword
 						data = new Data(Token.Keyword, k);
@@ -740,7 +749,7 @@ namespace Ghost.Script
 			while (!reader.EndOfStream)
 			{
 				var line = reader.ReadLine();
-				#if DEBUG
+				#if LOG_LINE
 				Console.ForegroundColor = ConsoleColor.Green;
 				Console.WriteLine(String.Format("TryParseLine[{0}]\n{1}", lineNumber, line));
 				#endif 

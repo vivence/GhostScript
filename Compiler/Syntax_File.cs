@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System;
 
 namespace Ghost.Script
 {
@@ -27,26 +28,31 @@ namespace Ghost.Script
 			switch (data.token)
 			{
 			case Token.Keyword:
-				if (Keyword.Interface == (Keyword)data.number.i_32)
 				{
-					return Syntax_Node.Create<Syntax_Interface>(data, this);
+					var keyword = (Keyword)data.number.i_32;
+					switch (keyword)
+					{
+					case Keyword.Interface:
+						return AddChild(Syntax_Node.Create<Syntax_Interface>(data, this));
+					case Keyword.Class:
+						return AddChild(Syntax_Node.Create<Syntax_Class>(data, this));
+					default:
+						{
+							var exception = new SyntaxException(Syntax.Error.InvalidKeyword);
+							exception.content = keyword.ToString();
+							throw exception;
+						}
+					}
 				}
-				else if (Keyword.Class == (Keyword)data.number.i_32)
-				{
-					return Syntax_Node.Create<Syntax_Class>(data, this);
-				}
-				else
-				{
-					// TODO invalid keyword
-				}
-				break;
 			case Token.Identify:
-				return Syntax_Node.Create<Syntax_Function>(data, this);
+				return AddChild(Syntax_Node.Create<Syntax_Function>(data, this));
 			default:
-				// TODO invalid token
-				break;
+				{
+					var exception = new SyntaxException(Syntax.Error.InvalidToken);
+					exception.content = data.token.ToString();
+					throw exception;
+				}
 			}
-			return parent_;
 		}
 		#endregion override
 	}
