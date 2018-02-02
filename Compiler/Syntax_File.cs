@@ -5,6 +5,7 @@ namespace Ghost.Script
 {
 	internal class Syntax_File : Syntax_Node
 	{
+		// TODO 将使用到的外部引用存储为字典，后期建立引用分配的时候进行分配赋值。
 		public string path{get;set;}
 
 		#region override

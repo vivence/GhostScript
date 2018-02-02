@@ -62,6 +62,7 @@ namespace Ghost.Script
 		Class,			// class
 		Interface,		// interface
 		Static,			// static
+		This,           // this
 		API, 			// API（用于访问外部接口）
 		Export 			// export（导出接口给外部访问，只能是全局函数或类静态函数）
 	}

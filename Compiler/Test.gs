@@ -1,17 +1,17 @@
 ﻿
 GlobalFunction()
-	XXClass obj = null
+	// XXClass obj = null
 
 	a = 1 // local variable
 	b = 2l
 	c = a+b
-	XXClass.abc = "abc"+"def"+1+1.1 // class static variable 
-	XXClass.def = "sfjaklsdjf;asl"
-				  "asdfasdfa"
-				  "alsdf"
-	obj.d = true // class instance variable
+	// XXClass.abc = "abc"+"def"+1+1.1 // class static variable 
+	// XXClass.def = "sfjaklsdjf;asl"
+	//			  "asdfasdfa"
+	//			  "alsdf"
+	// obj.d = true // class instance variable
 	a = Func(a,b,c)
-	a,b = Func_(obj.d, XXClass.abc)
+	// a,b = Func_(obj.d, XXClass.abc)
 
 	if ()
 	elseif ()

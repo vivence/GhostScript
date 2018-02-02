@@ -19,6 +19,8 @@ using System.Collections.Generic;
 /*
  * 特殊语法：
  * 标识符以下划线结尾则为本地私有，类中则为类私有，文件中则为文件私有
+ * 必须使用this.才能访问类实例中的标识符
+ * 必须使用class.（或者类名.）才能访问类静态标识符
  * Main(string[] args) end，console入口函数
  * 
  */

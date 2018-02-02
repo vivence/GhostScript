@@ -5,6 +5,7 @@ namespace Ghost.Script
 	internal abstract class Syntax_CodeBlock : Syntax_Node
 	{
 		// TODO save parsed code
+		// 数据：当前代码块栈（索引），外部引用，值
 
 		public enum CodePhase
 		{
@@ -65,8 +66,18 @@ namespace Ghost.Script
 				{
 				case Token.Keyword:
 					// TODO save
-					codePhase = CodePhase.ReturnSeparator;
-					return this;
+					if (Syntax.constantKeywordList.Contains((Keyword)data.number.i_32))
+					{
+						// TODO save
+						codePhase = CodePhase.ReturnSeparator;
+						return this;
+					}
+					else
+					{
+						var exception = new SyntaxException(Syntax.Error.InvalidToken);
+						exception.content = data.token.ToString();
+						throw exception;
+					}
 				case Token.Identify:
 					// TODO save
 					codePhase = CodePhase.ReturnSeparator;
